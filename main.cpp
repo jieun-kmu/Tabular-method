@@ -120,6 +120,7 @@ void findEPI(vector<vector<string>> bit, vector<string>& answer, vector<vector<i
     deduplicateStr(epiAnswer);
     deduplicateInt(epiIdx);
     // epi 삭제 -> epi 표에서 epi 및 관련 minterm 제거
+    // epi와 관련된 경우 값을 0으로
     for (int i = 0; i < epiIdx.size(); i++) {
         for (int j = 0; j < bitlist.size(); j++) {
             if (epi[epiIdx[i]][j] == 1) {
@@ -127,10 +128,7 @@ void findEPI(vector<vector<string>> bit, vector<string>& answer, vector<vector<i
             }
         } 
     }
-    for (int i = 0; i <epiIdx.size(); i++) {
-        exceptepi.erase(exceptepi.begin()+epiIdx[i]);
-        epi.erase(epi.begin()+epiIdx[i]);
-    }
+    // epi 배열에서 전체 0인 pi 제거
     for (int i = 0; i < epi.size(); i++) {
         int count = 0;
         for (int j = 0; j < epi[i].size(); j++) if (epi[i][j] == 1) count++;
@@ -146,8 +144,12 @@ void findEPI(vector<vector<string>> bit, vector<string>& answer, vector<vector<i
 }
 
 void findRow(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& answer) {
+    vector<pair<int, int>> rowpair;
     vector<int> row;
+    vector<int> rowdelete;
     int in, out, icount, jcount;
+    answer.push_back("ROW");
+    if(epi.empty()) return;
     for(int i = 0; i < epi.size()-1; i++) {
         for(int j = i+1; j < epi.size(); j++) {
             in = out = icount = jcount = 0;
@@ -158,11 +160,23 @@ void findRow(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& 
                 if(epi[i][k] == 0 && epi[j][k] == 1) out++;
             }
             if(icount == 0 || jcount == 0) continue;
-            if(in >= 0 && out == 0) row.push_back(i);
-            if(out > 0 && in == 0) row.push_back(j);
+            if(in >= 0 && out == 0) rowpair.push_back(make_pair(i, j));
+            if(out > 0 && in == 0) rowpair.push_back(make_pair(j, i));
         }
     }
-    answer.push_back("ROW");
+    if (rowpair.size() == 0) return;
+    row.push_back(rowpair[0].first);
+    rowdelete.push_back(rowpair[0].second);
+    for(int i = 1; i < rowpair.size(); i++) {
+        bool check = false;
+        for(int j = 0; j < row.size(); j++) {
+            if(rowpair[i].second == rowdelete[j]) check = true;
+        }
+        if(!check) {
+            row.push_back(rowpair[i].first);
+            rowdelete.push_back(rowpair[i].second);
+        }
+    }    
     deduplicateInt(row);
     for (int i = 0; i < row.size(); i++) {
         answer.push_back(exceptepi[row[i]]);
@@ -174,6 +188,9 @@ void findCol(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& 
     vector<int> col;
     vector<int> coldelete;
     int in, out, icount, jcount;
+    answer.push_back("COL");
+    if(epi.empty()) {return;}
+
     for(int i = 0; i < epi[0].size()-1; i++) {
         for(int j = i+1; j < epi[0].size(); j++) {
             in = out = icount = jcount = 0;
@@ -188,18 +205,19 @@ void findCol(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& 
             if(in > 0 && out == 0) colpair.push_back(make_pair(j, i));
         }
     } 
-    if (colpair.size() != 0) {
-        col.push_back(colpair[0].first);
-        coldelete.push_back(colpair[0].second);
-        for(int i = 1; i < colpair.size(); i++) {
-            for(int j = 0; j < col.size(); j++) {
-                if(colpair[i].second == coldelete[j]) continue; // colpair의 두번째 인자는 지배된 열
-                col.push_back(colpair[i].first);
-                coldelete.push_back(colpair[i].second);
-            }
+    if (colpair.size() == 0) return;
+    col.push_back(colpair[0].first);
+    coldelete.push_back(colpair[0].second);
+    for(int i = 1; i < colpair.size(); i++) {
+        bool check = false;
+        for(int j = 0; j < col.size(); j++) {
+            if(colpair[i].second == coldelete[j]) check = true; 
+        }
+        if(!check) {
+            col.push_back(colpair[i].first);
+            coldelete.push_back(colpair[i].second);
         }
     }
-    answer.push_back("COL");
     deduplicateInt(col);
     for (int i = 0; i < col.size(); i++) {
         answer.push_back(to_string(col[i]));
