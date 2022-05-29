@@ -1,4 +1,4 @@
-# Tabular-method
-## row and column dominance
+## Tabular-method
+### row and column dominance
 
-## 결과보고서
+### 결과보고서
