@@ -129,13 +129,16 @@ void findEPI(vector<vector<string>> bit, vector<string>& answer, vector<vector<i
         } 
     }
     // epi 배열에서 전체 0인 pi 제거
-    for (int i = 0; i < epi.size(); i++) {
+    int i = 0;
+    while(i != epi.size()) {
         int count = 0;
         for (int j = 0; j < epi[i].size(); j++) if (epi[i][j] == 1) count++;
         if (count == 0) {
             exceptepi.erase(exceptepi.begin()+i);
             epi.erase(epi.begin()+i);
-        }
+            i = 0;
+            continue;
+        } i++;
     }
     answer.push_back("EPI");
     for (int i = 0; i < epiAnswer.size(); i++) {
@@ -183,7 +186,7 @@ void findRow(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& 
     }
 }
 
-void findCol(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& answer) {
+void findCol(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& answer, vector<int> minterm) {
     vector<pair<int, int>> colpair;
     vector<int> col;
     vector<int> coldelete;
@@ -220,7 +223,7 @@ void findCol(vector<vector<int>> epi, vector<string> exceptepi, vector<string>& 
     }
     deduplicateInt(col);
     for (int i = 0; i < col.size(); i++) {
-        answer.push_back(to_string(col[i]));
+        answer.push_back(to_string(minterm[col[i]]));
     }
 }
 
@@ -246,7 +249,7 @@ int main() {
             if(answer[i][j] == '2') answer[i][j] = '-';
         }
     }
-    findCol(epi, exceptepi, answer);
+    findCol(epi, exceptepi, answer, minterm);
     // 출력
     for(int i = 0; i < answer.size(); i++) {
         cout << answer[i] << " ";
